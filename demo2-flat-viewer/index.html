@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Demo 2 — 2BHK Interactive Flat Viewer (Real Estate)</title>
+<style>body{margin:0;font-family:system-ui;background:#0b0f14;color:#eee} #ui{position:fixed;top:12px;left:12px;background:#000c;padding:14px;border:1px solid #333;border-radius:10px} button{margin:4px;padding:8px 10px;cursor:pointer}</style>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+</head><body>
+<div id="ui"><b>Skyline 2BHK · 1050 sqft</b><br/>
+<button data-v="top">Top view</button><button data-v="walk">Walkthrough</button><button id="dn">Day/Night</button>
+<div style="font-size:12px;color:#aaa">Click rooms for specs · drag to orbit</div><div id="info">Living 12×14 · Kitchen 10×8 · Bed 11×12</div></div>
+<script type="module">
+import * as THREE from 'three'; import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const r=new THREE.WebGLRenderer({antialias:true}); r.setSize(innerWidth,innerHeight); r.shadowMap.enabled=true; document.body.appendChild(r.domElement);
+const s=new THREE.Scene(); s.background=new THREE.Color(0x0b0f14);
+const cam=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,.1,200); cam.position.set(10,10,10);
+const c=new OrbitControls(cam,r.domElement); c.target.set(0,0,0);
+const sun=new THREE.DirectionalLight(0xfff2dd,1.6); sun.position.set(8,12,6); sun.castShadow=true; s.add(sun); s.add(new THREE.HemisphereLight(0xbfd9ff,0x30281c,.7));
+let night=false; document.getElementById('dn').onclick=()=>{night=!night; sun.intensity=night?.15:1.6; s.background.set(night?0x020409:0x0b0f14);};
+const wallM=new THREE.MeshStandardMaterial({color:0xe8e0d0,roughness:.9});
+const floorM=new THREE.MeshStandardMaterial({color:0x9a8a70,roughness:.8});
+function room(x,z,w,d,name){ const f=new THREE.Mesh(new THREE.BoxGeometry(w,.2,d),floorM); f.position.set(x,0,z); f.receiveShadow=true; s.add(f);
+ const t=.25,h=2.6; const mk=(ww,dd,px,pz)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(ww,h,dd),wallM);m.position.set(px,h/2,pz);m.castShadow=m.receiveShadow=true;m.userData.n=name;s.add(m);};
+ mk(w,t,x,z-d/2); mk(w,t,x,z+d/2); mk(t,d,x-w/2,z); mk(t,d,x+w/2,z); return f; }
+room(-2.5,0,5,6,'Living 12x14'); room(2.5,-1,5,4,'Kitchen 10x8 + Bed'); room(2.5,2.2,5,2.6,'Bed 11x12');
+// furniture blocks
+const bed=new THREE.Mesh(new THREE.BoxGeometry(2.4,.6,2),new THREE.MeshStandardMaterial({color:0x2563eb})); bed.position.set(2.5,.4,2.2); bed.castShadow=true; s.add(bed);
+const sofa=new THREE.Mesh(new THREE.BoxGeometry(2.4,.7,1),new THREE.MeshStandardMaterial({color:0x16a34a})); sofa.position.set(-2.5,.45,1.5); s.add(sofa);
+const info=document.getElementById('info');
+const ray=new THREE.Raycaster(),mv=new THREE.Vector2();
+addEventListener('click',e=>{mv.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(mv,cam);const h=ray.intersectObjects(s.children)[0]; if(h&&h.object.userData.n) info.textContent=h.object.userData.n;});
+document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{ if(b.dataset.v==='top'){cam.position.set(0,16,0.1);} else {cam.position.set(-2.5,1.6,4);} c.update();});
+(function loop(){requestAnimationFrame(loop);c.update();r.render(s,cam);})();
+</script></body></html>

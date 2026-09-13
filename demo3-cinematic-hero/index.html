@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Demo 3 — Cinematic Brand Hero (Immersive Website)</title>
+<style>html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui;overflow-x:hidden} canvas{position:fixed;inset:0} .sec{position:relative;min-height:100vh;display:flex;align-items:center;padding:6vw;box-sizing:border-box} .card{max-width:520px;background:#000a;padding:28px;border:1px solid #333;border-radius:16px} h1{font-size:52px;margin:0 0 12px} .cta{background:#fff;color:#000;border:0;padding:12px 22px;font-size:16px;cursor:pointer;border-radius:99px} #hud{position:fixed;top:12px;right:14px;font-size:12px;color:#aaa;background:#000a;padding:8px 12px;border-radius:8px}</style>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+</head><body>
+<div id="hud">Demo 3 of 3 — scroll ↓ · drag</div>
+<div class="sec"><div class="card"><h1>Launch beyond ordinary.</h1><p>Cinematic WebGL hero for D2C / startups. Scroll-reactive wormhole + particles. Replace with your brand.</p><button class="cta" onclick="alert('Demo CTA — wire to checkout in paid build')">Shop the drop</button></div></div>
+<div class="sec"><div class="card"><h1>Built to convert.</h1><p>60fps, mobile-safe, loads in &lt;2s. We ship this style as your homepage in 7 days.</p></div></div>
+<script type="module">
+import * as THREE from 'three';
+const r=new THREE.WebGLRenderer({antialias:true}); r.setSize(innerWidth,innerHeight); document.body.prepend(r.domElement);
+const s=new THREE.Scene(); s.fog=new THREE.FogExp2(0x000000,.028);
+const cam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,100); cam.position.z=8;
+// wormhole rings
+const ringM=new THREE.MeshBasicMaterial({color:0x38bdf8,transparent:true,opacity:.55});
+const rings=[]; for(let i=0;i<28;i++){const m=new THREE.Mesh(new THREE.TorusGeometry(1+i*.55,.05-i*.0012,10,80),ringM.clone()); m.position.z=-i*1.4; m.material.opacity=.15+Math.random()*.5; s.add(m); rings.push(m);}
+// stars
+const N=1200,pos=new Float32Array(N*3); for(let i=0;i<N;i++){pos[i*3]=(Math.random()-.5)*60;pos[i*3+1]=(Math.random()-.5)*60;pos[i*3+2]=-Math.random()*80;} 
+const pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
+s.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0xffffff,size:.07})));
+let t=0; addEventListener('scroll',()=>{t=scrollY/innerHeight;});
+(function loop(){requestAnimationFrame(loop); rings.forEach((m,i)=>{m.rotation.z+=.002*(i%3+1); m.position.z+=.02; if(m.position.z>8)m.position.z-=28*1.4;}); cam.position.z=8-t*10; cam.rotation.z=t*.25; r.render(s,cam);})();
+addEventListener('resize',()=>{r.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();});
+</script></body></html>
