@@ -65,7 +65,7 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.VSMShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = .55;
+renderer.toneMappingExposure = .42;
 host.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -83,7 +83,7 @@ controls.maxPolarAngle = Math.PI/2 - .02;
 function makeSky(){
   const s = new Sky(); s.scale.setScalar(2000);
   const u = s.material.uniforms;
-  u.turbidity.value = 6; u.rayleigh.value = 1.6;
+  u.turbidity.value = 6; u.rayleigh.value = 2.2;
   u.mieCoefficient.value = .004; u.mieDirectionalG.value = .85;
   return s;
 }
@@ -139,7 +139,7 @@ function setWorld(name){
     const sea = new THREE.Mesh(new THREE.CircleGeometry(900, 48),
       new THREE.MeshStandardMaterial({color:0x2e6f8e, roughness:.35, metalness:.1}));
     sea.rotation.x = -Math.PI/2; sea.position.y = -.35; sea.receiveShadow = true; add(sea);
-    add(sandDisc(26, 0xd9c39a));
+    add(sandDisc(26, 0xcfa96f));
     add(ridge(9, 120, 220, 10, 26, 0x6b7f88)); // hazy headlands out at sea
   } else if (name === 'mountain'){
     scene.fog.color.set(0xc3cfd8); scene.fog.near = 30; scene.fog.far = 130;
