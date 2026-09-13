@@ -32,7 +32,7 @@
 <div id="scene"></div>
 <div id="panel">
   <h1>Aria Lounge Chair</h1>
-  <div class="sub">Solid oak frame · buna95 fabric · free US/EU shipping</div>
+  <div class="sub">Solid oak frame · premium fabric · free US/EU shipping</div>
   <div id="price">$249 <small id="tier">Everyday fabric</small></div>
   <div class="lbl">Fabric</div><div class="swatches" id="fabrics"></div>
   <div class="lbl">Leg finish</div><div class="pills" id="legs"></div>
@@ -103,7 +103,6 @@ const legGeo = new THREE.CylinderGeometry(.045, .035, .78, 20);
 const legPos = [[-.52,-.46],[.52,-.46],[-.52,.46],[.52,.46]];
 const legMeshes = legPos.map(([x,z]) => part(legGeo, legM, x, .39, z));
 legMeshes.forEach((l,i)=>{ l.rotation.z = (i%2? -1:1)*.06; l.rotation.x = (i<2? 1:-1)*.06; });
-part(new THREE.BoxGeometry(1.05, .07, .9), fabric, 0, .42, 0); // under-frame
 
 // ---- options ----
 const FABRICS = [
