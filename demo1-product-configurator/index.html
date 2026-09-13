@@ -3,10 +3,10 @@
 <style>
   :root{color-scheme:dark}
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;font-family:system-ui,-apple-system,sans-serif;background:#101014;color:#f2f2f2;overflow:hidden}
+  html,body{margin:0;height:100%;font-family:system-ui,-apple-system,sans-serif;background:#0e1418;color:#f2f2f2;overflow:hidden}
   #scene{position:fixed;inset:0}
   #panel{position:fixed;right:16px;top:16px;width:300px;max-height:calc(100vh - 32px);overflow:auto;
-    background:rgba(18,18,22,.86);backdrop-filter:blur(12px);border:1px solid #2c2c34;border-radius:16px;padding:18px}
+    background:rgba(14,16,20,.86);backdrop-filter:blur(12px);border:1px solid #2c2c34;border-radius:16px;padding:18px}
   #panel h1{font-size:20px;margin:0 0 2px}
   #panel .sub{color:#a8a8b3;font-size:12px;margin-bottom:10px}
   #price{font-size:26px;font-weight:700;margin:6px 0 12px}
@@ -21,18 +21,26 @@
   #cta{width:100%;margin-top:16px;padding:13px;border:0;border-radius:12px;background:#ff5a1f;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
   #cta:active{transform:scale(.98)}
   #note{font-size:11px;color:#8a8a95;margin-top:8px;min-height:14px}
-  #hint{position:fixed;left:16px;bottom:14px;font-size:12px;color:#8a8a95;background:rgba(0,0,0,.5);padding:6px 12px;border-radius:99px}
+  #hint{position:fixed;left:16px;bottom:14px;font-size:12px;color:#e8e8ee;background:rgba(0,0,0,.45);padding:6px 12px;border-radius:99px}
   #vignette{position:fixed;inset:0;pointer-events:none;
-    background:radial-gradient(ellipse 90% 75% at 42% 42%, transparent 55%, rgba(0,0,0,.55) 100%);}
+    background:radial-gradient(ellipse 90% 75% at 42% 42%, transparent 58%, rgba(0,0,0,.42) 100%);}
+  #scene-picker{position:fixed;left:16px;top:14px;display:flex;gap:8px}
+  #scene-picker .pill{background:rgba(0,0,0,.45)}
+  #scene-picker .pill.on{background:#eee;color:#111}
   @media (max-width:640px){
     #panel{left:12px;right:12px;top:auto;bottom:12px;width:auto;max-height:44vh}
-    #hint{display:none}
+    #hint,#scene-picker{display:none}
   }
 </style>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
 <div id="scene"></div>
 <div id="vignette"></div>
+<div id="scene-picker">
+  <button class="pill on" data-scene="beach">Beach</button>
+  <button class="pill" data-scene="mountain">Mountains</button>
+  <button class="pill" data-scene="studio">Studio</button>
+</div>
 <div id="panel">
   <h1>Aria Lounge Chair</h1>
   <div class="sub">Solid oak frame · premium fabric · free US/EU shipping</div>
@@ -48,46 +56,110 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
-import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {Sky} from 'three/addons/objects/Sky.js';
 
 const host = document.getElementById('scene');
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.VSMShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = .55;
 host.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x101014);
-scene.fog = new THREE.Fog(0x101014, 9, 20); // infinite sweep: floor melts into bg
-scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), .04).texture;
+scene.fog = new THREE.Fog(0xc7d5e0, 35, 160);
 
-const camera = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, .1, 100);
+const camera = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, .1, 2000);
 camera.position.set(2.6, 1.9, 3.4);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, .75, 0);
 controls.enableDamping = true;
-controls.minDistance = 1.6; controls.maxDistance = 8;
+controls.minDistance = 1.6; controls.maxDistance = 9;
 controls.maxPolarAngle = Math.PI/2 - .02;
 
-const key = new THREE.DirectionalLight(0xffffff, 2.2);
-key.position.set(3.5, 6, 3); key.castShadow = true;
-key.shadow.mapSize.set(2048, 2048);
-key.shadow.camera.left = key.shadow.camera.bottom = -4;
-key.shadow.camera.right = key.shadow.camera.top = 4;
-scene.add(key);
-scene.add(new THREE.HemisphereLight(0xdfeaff, 0x1a1512, .5));
+// ---- sky + sun (one rig drives light, sky shader, and reflections) ----
+function makeSky(){
+  const s = new Sky(); s.scale.setScalar(2000);
+  const u = s.material.uniforms;
+  u.turbidity.value = 6; u.rayleigh.value = 1.6;
+  u.mieCoefficient.value = .004; u.mieDirectionalG.value = .85;
+  return s;
+}
+const sky = makeSky(); scene.add(sky);
+const sun = new THREE.Vector3().setFromSphericalCoords(1,
+  THREE.MathUtils.degToRad(90 - 26), THREE.MathUtils.degToRad(38));
+sky.material.uniforms.sunPosition.value.copy(sun);
+{ // reflections sampled from the same sky, so chrome and leather match the outdoors
+  const pm = new THREE.PMREMGenerator(renderer);
+  const es = new THREE.Scene(); const esky = makeSky();
+  esky.material.uniforms.sunPosition.value.copy(sun); es.add(esky);
+  scene.environment = pm.fromScene(es, .04).texture; pm.dispose();
+}
 
-const floor = new THREE.Mesh(
-  new THREE.CircleGeometry(11, 64),
-  new THREE.MeshStandardMaterial({color:0x1b1b20, roughness:.95}));
-floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
-const ring = new THREE.Mesh(
-  new THREE.RingGeometry(1.55, 1.62, 64),
-  new THREE.MeshBasicMaterial({color:0xff5a1f, transparent:true, opacity:.55, side:THREE.DoubleSide}));
-ring.rotation.x = -Math.PI/2; ring.position.y = .005; scene.add(ring);
+const key = new THREE.DirectionalLight(0xfff1dd, 2.6);
+key.position.copy(sun).multiplyScalar(30);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.left = key.shadow.camera.bottom = -5;
+key.shadow.camera.right = key.shadow.camera.top = 5;
+key.shadow.radius = 7; key.shadow.blurSamples = 14;
+scene.add(key);
+scene.add(new THREE.HemisphereLight(0xbfd6ee, 0x8a7a5f, .55));
+
+// ---- worlds: beach / mountains / studio ----
+const worlds = new THREE.Group(); scene.add(worlds);
+let worldNodes = [];
+function clearWorld(){ worldNodes.forEach(n => { worlds.remove(n); }); worldNodes = []; }
+function sandDisc(r, color){
+  const m = new THREE.Mesh(new THREE.CircleGeometry(r, 72),
+    new THREE.MeshStandardMaterial({color, roughness:1}));
+  m.rotation.x = -Math.PI/2; m.receiveShadow = true; return m;
+}
+function ridge(count, rMin, rMax, hMin, hMax, color){
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({color, roughness:1, flatShading:true});
+  for (let i = 0; i < count; i++){
+    const a = (i / count) * Math.PI * 2 + Math.random() * .4;
+    const r = rMin + Math.random() * (rMax - rMin);
+    const h = hMin + Math.random() * (hMax - hMin);
+    const w = h * (1.4 + Math.random());
+    const m = new THREE.Mesh(new THREE.ConeGeometry(w, h, 5), mat);
+    m.position.set(Math.cos(a) * r, h / 2 - 2, Math.sin(a) * r);
+    m.rotation.y = Math.random() * 3; g.add(m);
+  }
+  return g;
+}
+function setWorld(name){
+  clearWorld();
+  const add = n => { worlds.add(n); worldNodes.push(n); };
+  if (name === 'beach'){
+    scene.fog.color.set(0xc7d5e0); scene.fog.near = 35; scene.fog.far = 160;
+    const sea = new THREE.Mesh(new THREE.CircleGeometry(900, 48),
+      new THREE.MeshStandardMaterial({color:0x2e6f8e, roughness:.35, metalness:.1}));
+    sea.rotation.x = -Math.PI/2; sea.position.y = -.35; sea.receiveShadow = true; add(sea);
+    add(sandDisc(26, 0xd9c39a));
+    add(ridge(9, 120, 220, 10, 26, 0x6b7f88)); // hazy headlands out at sea
+  } else if (name === 'mountain'){
+    scene.fog.color.set(0xc3cfd8); scene.fog.near = 30; scene.fog.far = 130;
+    add(sandDisc(30, 0x9aa08a)); // meadow
+    add(ridge(16, 70, 130, 18, 44, 0x5a6b72)); // close pine ridge
+    add(ridge(10, 150, 240, 30, 70, 0x8fa3b0)); // snowy far range, fog does the haze
+  } else {
+    scene.fog.color.set(0x101014); scene.fog.near = 9; scene.fog.far = 20;
+    const st = sandDisc(11, 0x1b1b20); add(st);
+  }
+  // deck ring the chair sits in, present in every world
+  const ring = new THREE.Mesh(new THREE.RingGeometry(1.55, 1.62, 72),
+    new THREE.MeshBasicMaterial({color:0xff5a1f, transparent:true, opacity:.6, side:THREE.DoubleSide}));
+  ring.rotation.x = -Math.PI/2; ring.position.y = .01; add(ring);
+}
+setWorld('beach');
+document.querySelectorAll('#scene-picker .pill').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#scene-picker .pill').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); setWorld(b.dataset.scene);
+});
 
 // ---- chair ----
 const chair = new THREE.Group(); scene.add(chair);
@@ -99,14 +171,15 @@ function part(geo, mat, x, y, z, rx=0, ry=0, rz=0){
   m.position.set(x, y, z); m.rotation.set(rx, ry, rz);
   m.castShadow = m.receiveShadow = true; chair.add(m); return m;
 }
-part(new RoundedBoxGeometry(1.25, .16, 1.1, 4, .06), fabric, 0, .78, 0);                 // seat base
-const cushion = part(new RoundedBoxGeometry(1.1, .14, .95, 4, .07), cushionM, 0, .92, .02); // seat cushion
-const backC = part(new RoundedBoxGeometry(1.1, .78, .16, 4, .07), cushionM, 0, 1.42, -.5, -.1); // back cushion
-part(new RoundedBoxGeometry(1.22, .86, .1, 4, .04), fabric, 0, 1.42, -.6, -.1);            // back shell
+part(new RoundedBoxGeometry(1.25, .16, 1.1, 4, .06), fabric, 0, .78, 0);
+part(new RoundedBoxGeometry(1.1, .14, .95, 4, .07), cushionM, 0, .92, .02);
+part(new RoundedBoxGeometry(1.1, .78, .16, 4, .07), cushionM, 0, 1.42, -.5, -.1);
+part(new RoundedBoxGeometry(1.22, .86, .1, 4, .04), fabric, 0, 1.42, -.6, -.1);
 const legGeo = new THREE.CylinderGeometry(.045, .035, .78, 20);
-const legPos = [[-.52,-.46],[.52,-.46],[-.52,.46],[.52,.46]];
-const legMeshes = legPos.map(([x,z]) => part(legGeo, legM, x, .39, z));
-legMeshes.forEach((l,i)=>{ l.rotation.z = (i%2? -1:1)*.06; l.rotation.x = (i<2? 1:-1)*.06; });
+[[ -.52,-.46],[.52,-.46],[-.52,.46],[.52,.46]].forEach(([x,z],i) => {
+  const l = part(legGeo, legM, x, .39, z);
+  l.rotation.z = (i%2 ? -1:1)*.06; l.rotation.x = (i<2 ? 1:-1)*.06;
+});
 
 // ---- options ----
 const FABRICS = [
@@ -126,8 +199,7 @@ const priceEl = document.getElementById('price');
 const tierEl = document.getElementById('tier');
 const ctaPrice = document.getElementById('ctaprice');
 const note = document.getElementById('note');
-let curP = 249;
-function setPrice(p, t){ curP = p;
+function setPrice(p, t){
   priceEl.childNodes[0].textContent = '$'+p+' ';
   tierEl.textContent = t; ctaPrice.textContent = '$'+p;
 }
