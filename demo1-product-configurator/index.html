@@ -22,6 +22,8 @@
   #cta:active{transform:scale(.98)}
   #note{font-size:11px;color:#8a8a95;margin-top:8px;min-height:14px}
   #hint{position:fixed;left:16px;bottom:14px;font-size:12px;color:#8a8a95;background:rgba(0,0,0,.5);padding:6px 12px;border-radius:99px}
+  #vignette{position:fixed;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 90% 75% at 42% 42%, transparent 55%, rgba(0,0,0,.55) 100%);}
   @media (max-width:640px){
     #panel{left:12px;right:12px;top:auto;bottom:12px;width:auto;max-height:44vh}
     #hint{display:none}
@@ -30,6 +32,7 @@
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 </head><body>
 <div id="scene"></div>
+<div id="vignette"></div>
 <div id="panel">
   <h1>Aria Lounge Chair</h1>
   <div class="sub">Solid oak frame · premium fabric · free US/EU shipping</div>
@@ -58,6 +61,7 @@ host.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x101014);
+scene.fog = new THREE.Fog(0x101014, 9, 20); // infinite sweep: floor melts into bg
 scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), .04).texture;
 
 const camera = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, .1, 100);
@@ -77,7 +81,7 @@ scene.add(key);
 scene.add(new THREE.HemisphereLight(0xdfeaff, 0x1a1512, .5));
 
 const floor = new THREE.Mesh(
-  new THREE.CircleGeometry(4.2, 64),
+  new THREE.CircleGeometry(11, 64),
   new THREE.MeshStandardMaterial({color:0x1b1b20, roughness:.95}));
 floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
 const ring = new THREE.Mesh(
