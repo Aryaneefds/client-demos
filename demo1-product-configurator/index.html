@@ -140,9 +140,9 @@ function ridge(count, rMin, rMax, hMin, hMax, color){
     const a = (i / count) * Math.PI * 2 + Math.random() * .4;
     const r = rMin + Math.random() * (rMax - rMin);
     const h = hMin + Math.random() * (hMax - hMin);
-    const w = h * (1.4 + Math.random());
+    const w = h * (2.0 + Math.random() * 1.2); // wide flat slopes, only tops clear the haze
     const m = new THREE.Mesh(new THREE.ConeGeometry(w, h, 5), mat);
-    m.position.set(Math.cos(a) * r, h / 2 - 2, Math.sin(a) * r);
+    m.position.set(Math.cos(a) * r, h / 2 - 4, Math.sin(a) * r);
     m.rotation.y = Math.random() * 3; g.add(m);
   }
   return g;
@@ -151,7 +151,7 @@ let water = null;
 function setWorld(){
   clearWorld();
   const add = n => { worlds.add(n); worldNodes.push(n); };
-  scene.fog.color.set(0xc7d5e0); scene.fog.near = 35; scene.fog.far = 160;
+  scene.fog.color.set(0xc7d5e0); scene.fog.near = 35; scene.fog.far = 340;
   water = new Water(new THREE.PlaneGeometry(1200, 1200), {
     textureWidth: 512, textureHeight: 512,
     waterNormals: new THREE.TextureLoader().load('textures/waternormals.jpg',
@@ -164,7 +164,7 @@ function setWorld(){
   const wet = new THREE.Mesh(new THREE.RingGeometry(19, 26, 72),
     new THREE.MeshStandardMaterial({color:0xa87f4e, roughness:.35}));
   wet.rotation.x = -Math.PI/2; wet.position.y = .01; wet.receiveShadow = true; add(wet);
-  add(ridge(9, 120, 220, 10, 26, 0x6b7f88)); // hazy headlands out at sea
+  add(ridge(6, 170, 260, 8, 20, 0x7d94a3)); // low far headlands, mostly haze
   // deck ring the chair sits in, present in every world
   const ring = new THREE.Mesh(new THREE.RingGeometry(1.55, 1.62, 72),
     new THREE.MeshBasicMaterial({color:0xff5a1f, transparent:true, opacity:.6, side:THREE.DoubleSide}));
