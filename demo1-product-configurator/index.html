@@ -76,7 +76,7 @@ controls.maxPolarAngle = Math.PI/2 - .02;
 function makeSky(){
   const s = new Sky(); s.scale.setScalar(2000);
   const u = s.material.uniforms;
-  u.turbidity.value = 6; u.rayleigh.value = 2.2;
+  u.turbidity.value = 6; u.rayleigh.value = 2.8;
   u.mieCoefficient.value = .004; u.mieDirectionalG.value = .85;
   return s;
 }
@@ -151,7 +151,7 @@ let water = null;
 function setWorld(){
   clearWorld();
   const add = n => { worlds.add(n); worldNodes.push(n); };
-  scene.fog.color.set(0xc7d5e0); scene.fog.near = 35; scene.fog.far = 340;
+  scene.fog.color.set(0xc7d5e0); scene.fog.near = 35; scene.fog.far = 220;
   water = new Water(new THREE.PlaneGeometry(1200, 1200), {
     textureWidth: 512, textureHeight: 512,
     waterNormals: new THREE.TextureLoader().load('textures/waternormals.jpg',
