@@ -82,7 +82,7 @@ function makeSky(){
 }
 const sky = makeSky(); scene.add(sky);
 const sun = new THREE.Vector3().setFromSphericalCoords(1,
-  THREE.MathUtils.degToRad(90 - 26), THREE.MathUtils.degToRad(38));
+  THREE.MathUtils.degToRad(90 - 17), THREE.MathUtils.degToRad(38));
 sky.material.uniforms.sunPosition.value.copy(sun);
 { // reflections sampled from the same sky, so chrome and leather match the outdoors
   const pm = new THREE.PMREMGenerator(renderer);
@@ -156,8 +156,8 @@ function setWorld(){
     textureWidth: 512, textureHeight: 512,
     waterNormals: new THREE.TextureLoader().load('textures/waternormals.jpg',
       t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; }),
-    sunDirection: sun.clone().normalize(), sunColor: 0xfff2dd,
-    waterColor: 0x0a3b46, distortionScale: 2.6, fog: true
+    sunDirection: sun.clone().normalize(), sunColor: 0xffedd0,
+    waterColor: 0x062a3a, distortionScale: 3.8, fog: true
   });
   water.rotation.x = -Math.PI/2; water.position.y = -.4; add(water);
   add(sandDisc(26));
