@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Aria Lounge Chair — 3D Configurator</title>
+<title>Aria Lounge Chair - 3D Configurator</title>
 <style>
   :root{color-scheme:dark}
   *{box-sizing:border-box}
@@ -37,7 +37,7 @@
   <div class="lbl">Fabric</div><div class="swatches" id="fabrics"></div>
   <div class="lbl">Leg finish</div><div class="pills" id="legs"></div>
   <div class="lbl">View</div><div class="pills"><button class="pill on" id="spin">Auto-rotate on</button></div>
-  <button id="cta">Add to cart — <span id="ctaprice">$249</span></button>
+  <button id="cta">Add to cart - <span id="ctaprice">$249</span></button>
   <div id="note"></div>
 </div>
 <div id="hint">Drag to rotate · Scroll to zoom</div>
@@ -130,7 +130,7 @@ function setPrice(p, t){ curP = p;
 const fWrap = document.getElementById('fabrics');
 FABRICS.forEach((f, i) => {
   const b = document.createElement('button');
-  b.className = 'sw' + (i===0 ? ' on' : ''); b.title = `${f.n} — $${f.p}`;
+  b.className = 'sw' + (i===0 ? ' on' : ''); b.title = `${f.n} - $${f.p}`;
   b.style.background = '#'+f.c.toString(16).padStart(6,'0');
   b.onclick = () => {
     fWrap.querySelectorAll('.sw').forEach(x=>x.classList.remove('on')); b.classList.add('on');
@@ -156,7 +156,7 @@ const spinB = document.getElementById('spin');
 spinB.onclick = () => { spin = !spin; spinB.textContent = spin ? 'Auto-rotate on' : 'Auto-rotate off'; spinB.classList.toggle('on', spin); };
 let cart = 0;
 document.getElementById('cta').onclick = () => {
-  cart++; note.textContent = `Added to cart (${cart}) — demo checkout, wire to Shopify in production.`;
+  cart++; note.textContent = `Added to cart (${cart}) - demo checkout, wire to Shopify in production.`;
 };
 
 (function loop(){ requestAnimationFrame(loop);
